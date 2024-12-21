@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marsanix Charbot v0.1</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <h1>Marsanix Chatbot</h1>
+        <div class="chat-box" id="chat-box">
+            <!-- Chat logs will appear here -->
+        </div>
+        <form id="chat-form">
+            <input type="text" id="message" placeholder="Tulis pesan..." autocomplete="off" required>
+            <button type="submit">Kirim</button>
+        </form>
+    </div>
+    <script>
+
+        var welcomeMessage = document.createElement('div');
+            welcomeMessage.classList.add('user-message');
+            welcomeMessage.textContent = 'Owner: Hai, silahkan ketik apa yang ingin Anda ketahui! Semoga membantu ya... 0,o';
+            document.getElementById('chat-box').appendChild(welcomeMessage);
+
+        document.getElementById('chat-form').onsubmit = function(e) {
+            e.preventDefault();
+
+            var message = document.getElementById('message').value;
+            var chatBox = document.getElementById('chat-box');
+
+            var userMessage = document.createElement('div');
+            userMessage.classList.add('user-message');
+            userMessage.textContent = 'You: ' + message;
+            chatBox.appendChild(userMessage);
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'message=' + encodeURIComponent(message)
+            }).then(response => response.json()).then(data => {
+                var botMessage = document.createElement('div');
+                botMessage.classList.add('bot-message');
+
+                var converter = new showdown.Converter();
+                var htmlData = converter.makeHtml(data.response);
+
+                botMessage.innerHTML = 'Bot:\n' + htmlData;
+                chatBox.appendChild(botMessage);
+                chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+            });
+
+            document.getElementById('message').value = '';
+        };
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+
+</body>
+</html>
